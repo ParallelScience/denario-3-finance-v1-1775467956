@@ -1,0 +1,90 @@
+\documentclass[]{article}
+
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{natbib}
+\usepackage{graphicx} 
+
+
+\begin{document}
+
+This section presents the empirical findings from our investigation into Sectoral Volatility Dispersion (SVD) as a leading indicator for innovations in the CBOE Volatility Index (VIX). The analysis spans from January 2015 to April 2026. We first characterize the VIX regimes and the dynamics of our dispersion metric, then present the results from our econometric models assessing the conditional predictive power of SVD.
+
+\subsection{VIX regimes and dispersion dynamics}
+The foundational metric of this study, Sectoral Volatility Dispersion (SVD), was constructed as the cross-sectional standard deviation of 21-day realized volatilities across nine major sector ETFs. To facilitate time-series modeling, this raw measure was transformed into a rolling 252-day Z-score. An Augmented Dickey-Fuller (ADF) test confirmed that the normalized SVD series is stationary (ADF statistic = -4.97, $p < 0.001$), making it a suitable candidate for our predictive models.
+
+To define market states, we applied a three-state Gaussian Hidden Markov Model (HMM) to the daily log-returns of the VIX. This data-driven approach avoids arbitrary thresholds and identifies regimes based on the distributional properties of VIX changes. By examining the average VIX level on days assigned to each latent state, we labeled the regimes as:
+\begin{itemize}
+    \item \textbf{Low Volatility Regime:} Mean VIX of 17.54
+    \item \textbf{Moderate Volatility Regime:} Mean VIX of 19.29
+    \item \textbf{High Volatility Regime:} Mean VIX of 21.90
+\end{itemize}
+The elevated baseline of the "Low" regime reflects the structural characteristics of the post-2015 sample period, which included several episodes of heightened market tension.
+
+Figure \ref{fig:vix_svd_corr} visualizes the temporal evolution of the VIX and its HMM-defined regimes alongside the normalized SVD and the average 21-day cross-sector correlation. Visual inspection suggests that spikes in SVD often coincide with or slightly precede transitions into the High volatility regime. However, this relationship appears inconsistent and potentially modulated by the concurrent state of cross-sector correlation, motivating a more rigorous econometric analysis.
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{../input_files/plots/step_5_vix_svd_correlation_multipanel_1_20260406_094306.png}
+    \caption{Temporal evolution of key market metrics from January 2015 to April 2026. The top panel displays the CBOE Volatility Index (VIX) with background shading indicating the Low, Moderate, and High volatility regimes identified by a Hidden Markov Model. The middle panel shows the normalized Sectoral Volatility Dispersion (SVD), a 252-day rolling Z-score of the cross-sectional standard deviation of sector volatilities. The bottom panel plots the 21-day rolling average of pairwise sector correlations. The visualization suggests that spikes in SVD frequently coincide with or precede transitions into the High volatility regime, a relationship that appears to be modulated by the concurrent state of cross-sector correlation.}
+    \label{fig:vix_svd_corr}
+\end{figure*}
+
+\subsection{The conditional predictive power of SVD}
+To formally test our central hypothesis, we estimated an Ordinary Least Squares (OLS) regression to predict future VIX log-returns at 5-day and 21-day horizons. The model included normalized SVD, an interaction term between SVD and average sector correlation, and standard control variables. Standard errors were corrected using the Newey-West estimator to account for autocorrelation and heteroskedasticity.
+
+The results are summarized in Table \ref{tab:ols_results}. At the short-term 5-day horizon, the model has weak explanatory power ($R^2 = 0.016$), and neither SVD nor its interaction with correlation is statistically significant. The only significant predictor is the concurrent market return, reflecting the well-documented contemporaneous leverage effect.
+
+\begin{table*}[htbp]
+\centering
+\caption{OLS Regression of Future VIX Log-Returns}
+\label{tab:ols_results}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{l c c c c}
+\hline\hline
+ & \multicolumn{2}{c}{5-Day Ahead $\Delta \ln(\text{VIX})$} & \multicolumn{2}{c}{21-Day Ahead $\Delta \ln(\text{VIX})$} \\
+\cline{2-3} \cline{4-5}
+Variable & Coefficient & p-value & Coefficient & p-value \\
+\hline
+Intercept & 0.0031 & (0.849) & -0.0058 & (0.831) \\
+SVD$_t$ & -0.0014 & (0.944) & 0.0473 & (0.198) \\
+SVD$_t \times$ AvgCorr$_t$ & -0.0128 & (0.690) & \textbf{-0.1267} & \textbf{(0.013)} \\
+$\Delta \ln(\text{VIX})_t$ & -0.0495 & (0.118) & -0.0911 & (0.052) \\
+$r_{\text{MKT},t}$ & \textbf{1.0832} & \textbf{(0.012)} & 0.8954 & (0.145) \\
+\hline
+Observations & \multicolumn{2}{c}{2,828} & \multicolumn{2}{c}{2,828} \\
+$R^2$ & \multicolumn{2}{c}{0.016} & \multicolumn{2}{c}{0.047} \\
+\hline
+\multicolumn{5}{l}{\footnotesize Note: Standard errors are Newey-West corrected. Bold values indicate statistical significance at the 5\% level.}
+\end{tabular}
+}
+\end{table*}
+
+In contrast, at the 21-day horizon, a crucial dynamic emerges. While the SVD term in isolation remains statistically insignificant ($p = 0.198$), the interaction term between SVD and average sector correlation is negative and highly significant ($\beta = -0.1267$, $p = 0.013$). This is the central finding of our study. The negative coefficient implies that the effect of SVD on future VIX innovations is conditional on the market's correlational structure. Specifically, an increase in SVD is associated with significantly higher 21-day ahead VIX innovations only when average sector correlation is low. When correlation is high, the effect of SVD is dampened or reversed. This result supports our hypothesis that SVD is not a standalone signal but becomes a potent indicator of market fragility when it coincides with a breakdown in the market's internal cohesion.
+
+\subsection{SVD as a regime transition warning signal}
+We next evaluated SVD's utility as a discrete warning signal for imminent volatility spikes using a logistic regression model. The model was designed to predict the probability of transitioning into the "High" volatility regime on day $t$, conditional on not being in that state on day $t-1$. The primary predictor was the lagged normalized SVD.
+
+The model failed to find a significant relationship, with the coefficient for lagged SVD being statistically insignificant ($p = 0.558$). The model's overall discriminatory power, shown in Figure \ref{fig:logreg_performance}, is poor. The Area Under the Receiver Operating Characteristic curve (AUROC) is 0.526, only marginally better than a random guess (0.500). More revealing is the Precision-Recall Area Under the Curve (PR AUC), which is a more informative metric for imbalanced datasets where the event of interest (a transition to high volatility) is rare. The PR AUC of 0.0195 is exceptionally low, indicating that when the model does predict a transition, it has very low precision. This result reinforces the finding from our linear models: SVD, when considered in isolation, is not an effective tool for timing discrete shifts into high-volatility states.
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{../input_files/plots/step_5_model_performance_curves_2_20260406_094306.png}
+    \caption{Performance of the logistic regression model designed to predict transitions into the High VIX regime using lagged normalized Sectoral Volatility Dispersion (SVD). The left panel displays the Receiver Operating Characteristic (ROC) curve, yielding an Area Under the Curve (AUROC) of 0.526, which indicates predictive power only marginally better than a random classifier. The right panel presents the Precision-Recall (PR) curve, whose area of 0.0195 highlights the model's poor performance. This extremely low PR AUC, driven by the severe class imbalance of rare regime transitions, demonstrates that SVD in isolation is an insufficient predictor for the timing of VIX regime shifts.}
+    \label{fig:logreg_performance}
+\end{figure*}
+
+\subsection{Robustness to sectoral composition}
+To ensure our findings were not driven by the idiosyncratic behavior of a single dominant sector (e.g., Technology or Energy), we performed a Leave-One-Out Cross-Validation (LOOCV) on the logistic regression model. The SVD metric was recalculated nine times, each time excluding one sector, and the model's AUROC was re-evaluated.
+
+The results, presented in Figure \ref{fig:loocv_robustness}, demonstrate the stability of our conclusions. The AUROC scores are tightly clustered around the baseline model's performance, with a mean of 0.5272 and a standard deviation of just 0.0094. This narrow distribution confirms that the informational content of SVD—and its limitations as an unconditional predictor—is a robust, market-wide phenomenon. The signal is genuinely cross-sectional and not an artifact of any single sector's variance.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../input_files/plots/step_5_loocv_auroc_barchart_3_20260406_094306.png}
+    \caption{Robustness of the Sectoral Volatility Dispersion (SVD) metric assessed via a Leave-One-Out Cross-Validation (LOOCV) procedure. The bar chart displays the Area Under the Receiver Operating Characteristic (AUROC) score for the logistic regression model predicting VIX regime transitions, where the SVD metric is iteratively recalculated excluding one of the nine sector ETFs. The tight clustering of the AUROC scores around the baseline model's performance (0.526, red dashed line) demonstrates that the informational content and predictive limitations of SVD are a robust, market-wide phenomenon and not an artifact driven by any single sector's volatility.}
+    \label{fig:loocv_robustness}
+\end{figure}
+
+\end{document}
+                

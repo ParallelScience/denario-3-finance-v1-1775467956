@@ -1,0 +1,73 @@
+{
+    "sub_tasks": [
+        {
+            "bullet_points": [
+                "Load the close_prices.csv dataset.",
+                "Filter for the 9 stable sector ETFs (XLK, XLF, XLV, XLE, XLI, XLY, XLP, XLU, XLB) and the ^VIX index and ^GSPC index.",
+                "Calculate daily log-returns for the 9 selected sector ETFs and ^GSPC.",
+                "Load and save raw ^VIX price levels alongside log-returns.",
+                "Handle missing values by dropping rows where any of the 9 sector ETFs have missing data to ensure a balanced panel.",
+                "Save the cleaned log-returns, raw VIX levels, and GSPC returns to a file for subsequent steps."
+            ],
+            "sub_task": "Data Preprocessing and Harmonization",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load the cleaned data from Step 1.",
+                "Calculate the 21-day rolling realized volatility for each of the 9 sector ETFs, annualizing by multiplying the standard deviation of log-returns by sqrt(252).",
+                "Compute the Cross-Sectional Standard Deviation (CSSD) of these 9 annualized realized volatility series for each day t to define the SVD metric.",
+                "Apply Z-score normalization to the SVD series using a 252-day rolling window.",
+                "Print descriptive statistics (mean, std, min, max) for both raw and normalized SVD series.",
+                "Save the SVD series and the rolling realized volatility data."
+            ],
+            "sub_task": "Construction of Sectoral Volatility Dispersion (SVD)",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load the data from previous steps.",
+                "Transform the ^VIX series into log-returns.",
+                "Implement a Hidden Markov Model (HMM) with three states fitted on the full ^VIX log-return series.",
+                "Map HMM states to Low/Moderate/High regimes based on the mean ^VIX level within each state.",
+                "Perform ADF tests on both raw and normalized SVD series and print full test results (ADF statistic, p-value, lags) to the console.",
+                "Generate lagged features of the SVD (SVD_t-1, SVD_t-5, SVD_t-21) and calculate the 21-day rolling average pairwise correlation of the 9 sector ETFs.",
+                "Save the regime labels and engineered features."
+            ],
+            "sub_task": "VIX Regime Definition and Feature Engineering",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load the features and regime labels.",
+                "Estimate the regression of delta ln(VIX)_t+k against lagged SVD, ^GSPC returns, and interaction terms using Newey-West standard errors for k=5 and k=21.",
+                "Print full regression summary tables (coefficients, standard errors, t-stats, p-values, R-squared) for both horizons.",
+                "Perform logistic regression to predict the probability of transitioning into a High volatility regime using lagged SVD.",
+                "Conduct leave-one-out cross-validation and print the distribution (mean, std, min, max) of AUROC scores.",
+                "Save all regression coefficients and model performance metrics."
+            ],
+            "sub_task": "Predictive Modeling and Statistical Analysis",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Load the saved results and metrics.",
+                "Generate a consolidated multi-panel figure showing ^VIX levels with regime color-coding, the SVD series, and the average pairwise correlation on a shared time axis.",
+                "Generate plots for model performance (AUROC/Precision-Recall curves).",
+                "Save all plots as high-resolution PNG files."
+            ],
+            "sub_task": "Visualization of Results",
+            "sub_task_agent": "engineer"
+        },
+        {
+            "bullet_points": [
+                "Synthesize the quantitative results, statistical test outputs, and visual evidence generated in previous steps.",
+                "Interpret the predictive power of SVD regarding ^VIX regime transitions.",
+                "Discuss the implications of the findings for market risk management and sector decoupling.",
+                "Write the full Results section of the research report, referencing the generated plots and key statistics."
+            ],
+            "sub_task": "Final Reporting",
+            "sub_task_agent": "researcher"
+        }
+    ]
+}

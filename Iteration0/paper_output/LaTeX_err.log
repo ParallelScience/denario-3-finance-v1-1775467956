@@ -1,0 +1,23 @@
+LaTeX Compilation Errors Found:
+
+! Undefined control sequence.
+<recently read> \cmidrule
+
+l.60 }
+
+? ! Undefined control sequence.
+<argument> ...$} \\ \cmidrule (lr){2-3} \cmidrule
+(lr){4-5} Variable & Coeff...
+l.60 }
+
+?
+
+! Emergency stop.
+<argument> ...$} \\ \cmidrule (lr){2-3} \cmidrule
+(lr){4-5} Variable & Coeff...
+l.60 }
+
+Output written on Results.pdf (1 page).
+Transcript written on Results.log.
+---- STDERR ----
+
