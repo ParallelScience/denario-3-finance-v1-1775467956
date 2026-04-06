@@ -1,0 +1,130 @@
+
+###### PROMPT BEGINS ########
+Human: You are provided with:
+- a description of the data
+- an idea
+- research plan to carry out the idea.
+
+Your task is to provide suggestions on how to improve the plan.
+Take into account and potential feedback (if any).
+If the plan is already good enough, do not give suggestions to improve it. If this is not first iteration, you will also be provided with the previous research plan along with some feedback on it. If this is the case, take into account the feedback provided when designing the new research plan. It is good to have a detailed plan, but not to have an overly complicated plan. If you dont have suggestions, just say that you dont have further suggestions. The idea should remain the same. No need to add code to the research plan, as another agent will write code given the research plan.
+
+Data description:
+## Finance Dataset: Daily OHLCV for US Equities, Indices, and Sector ETFs (2015–2026)
+
+### Files
+
+- **`/home/node/work/data/finance/ohlcv_daily.parquet`** — Full OHLCV data. Multi-level column index: outer level = field (Open, High, Low, Close, Volume), inner level = ticker symbol. Shape: (2830, 330). Load with `pd.read_parquet(...)`.
+- **`/home/node/work/data/finance/close_prices.csv`** — Adjusted close prices only. Shape: (2830 rows × 66 columns). Index = trading dates (datetime), columns = ticker symbols. Load with `pd.read_csv(..., index_col=0, parse_dates=True)`.
+
+### Tickers (66 total)
+
+**Major US Indices (5):** `^GSPC` (S&P 500), `^DJI` (Dow Jones), `^IXIC` (Nasdaq Composite), `^RUT` (Russell 2000), `^VIX` (CBOE Volatility Index)
+
+**Sector ETFs (11):** `XLK` (Tech), `XLF` (Financials), `XLV` (Healthcare), `XLE` (Energy), `XLI` (Industrials), `XLY` (Consumer Discretionary), `XLP` (Consumer Staples), `XLU` (Utilities), `XLB` (Materials), `XLRE` (Real Estate), `XLC` (Communication Services)
+
+**Large-Cap Stocks (50):**
+- Tech: AAPL, MSFT, NVDA, GOOGL, META, AMZN, TSLA, AVGO, ORCL, AMD
+- Finance: JPM, BAC, GS, MS, V, MA, BRK-B, WFC, AXP, BLK
+- Healthcare: UNH, JNJ, LLY, ABBV, MRK, PFE, TMO, DHR, ABT
+- Energy: XOM, CVX, COP, SLB
+- Consumer: WMT, COST, HD, MCD, NKE, SBUX
+- Industrial: CAT, BA, GE, HON, UPS
+- Telecom/Media: T, VZ, NFLX, DIS
+- Other: LIN, NEE
+
+### Data Properties
+
+- **Date range:** 2015-01-02 to 2026-04-06 (~2,830 trading days, ~11 years)
+- **Frequency:** Daily (US market trading days only)
+- **Prices:** Adjusted for splits and dividends (`auto_adjust=True` from yfinance)
+- **Units:** USD (prices), shares (volume)
+- **Missing values:** XLC has ~31% missing (launched 2018); XLRE has ~7% missing (launched 2015-Q4); all other tickers have <0.04% missing (1–2 isolated days, likely data gaps)
+- **VIX:** Volatility index — not a tradeable price; represents implied 30-day volatility of S&P 500 options (values typically 10–80)
+
+### Suggested Analyses
+
+- Log-return time series: `log_returns = np.log(close / close.shift(1)).dropna()`
+- Correlation/covariance structure across assets and sectors
+- Factor models (PCA, market beta, sector exposures)
+- Volatility regimes and clustering
+- Cross-sectional return predictability
+- Portfolio optimization (mean-variance, risk parity)
+- Sector rotation dynamics
+
+
+Idea:
+**Title: Cross-Sectional Dispersion of Realized Volatility as a Leading Indicator for VIX Regime Transitions**
+
+This study quantifies the structural divergence between realized sectoral volatility and implied market volatility by calculating the 21-day rolling cross-sectional standard deviation (CSSD) of log-returns across 10 stable sector ETFs. Rather than modeling directional returns, we define the "Sectoral Volatility Dispersion" (SVD) as the primary feature to identify shifts in market-wide risk regimes. We hypothesize that an expansion in SVD—representing idiosyncratic volatility clustering—precedes significant regime shifts in `^VIX`, even when market beta remains stable. The model utilizes a threshold-based regime detection framework, regressing `^VIX` innovations against lagged SVD values to distinguish between systemic market shocks and sector-specific decoupling. By excluding `XLC` and `XLRE` to maintain data uniformity, we eliminate bias from missing observations, ensuring the SVD metric remains a stable measure of internal market tension. This approach provides a robust, non-parametric signal for volatility regime changes that avoids the multicollinearity inherent in PCA-based factor models.
+
+Research plan:
+1. **Data Preprocessing and Harmonization**
+   - Load the `close_prices.csv` dataset.
+   - Filter the dataset to include only the 10 stable sector ETFs (XLK, XLF, XLV, XLE, XLI, XLY, XLP, XLU, XLB, XLC is excluded, XLRE is excluded) and the `^VIX` index.
+   - Calculate daily log-returns for the 10 selected sector ETFs using the formula: $r_{i,t} = \ln(P_{i,t} / P_{i,t-1})$.
+   - Handle missing values by dropping any rows where any of the 10 sector ETFs have missing data to ensure a balanced panel for the cross-sectional calculation.
+
+2. **Construction of Sectoral Volatility Dispersion (SVD)**
+   - Calculate the 21-day rolling realized volatility for each of the 10 sector ETFs.
+   - Compute the Cross-Sectional Standard Deviation (CSSD) of these 10 realized volatility series for each day $t$.
+   - Define this daily CSSD as the SVD metric, representing the dispersion of idiosyncratic volatility across the market sectors.
+
+3. **VIX Regime Definition**
+   - Transform the `^VIX` series into a stationary format by calculating daily innovations: $\Delta VIX_t = VIX_t - VIX_{t-1}$.
+   - Define volatility regimes using a threshold-based approach: classify days into "Low," "Moderate," and "High" volatility regimes based on the 33rd and 66th percentiles of the `^VIX` distribution.
+   - Create a binary indicator variable for "Regime Transitions" (e.g., a shift from Low to High or Moderate to High) to serve as the target variable for predictive modeling.
+
+4. **Stationarity and Feature Engineering**
+   - Perform Augmented Dickey-Fuller (ADF) tests on the SVD series to ensure stationarity.
+   - If the SVD series is non-stationary, apply first-differencing to obtain $\Delta SVD_t$.
+   - Generate lagged features of the SVD (e.g., $SVD_{t-1}, SVD_{t-5}, SVD_{t-21}$) to capture the temporal lead-lag relationship between sectoral tension and market-wide volatility.
+
+5. **Correlation and Decoupling Analysis**
+   - Calculate the rolling 21-day correlation matrix of the 10 sector ETFs.
+   - Compute the average pairwise correlation to identify periods of "market decoupling," where sector correlations drop while SVD increases.
+   - Visualize the relationship between SVD and average sector correlation to validate the hypothesis that SVD captures idiosyncratic clustering rather than systemic beta-driven movement.
+
+6. **Predictive Modeling of VIX Innovations**
+   - Estimate a linear regression model: $\Delta VIX_{t+k} = \alpha + \beta_1 SVD_t + \beta_2 \Delta VIX_t + \epsilon_t$, where $k$ represents the lead horizon (e.g., 1, 5, and 10 days).
+   - Use Newey-West standard errors to account for heteroskedasticity and autocorrelation in the residuals.
+   - Evaluate the predictive power of SVD by comparing the R-squared and the significance of $\beta_1$ against a baseline model that only includes lagged `^VIX` innovations.
+
+7. **Threshold-Based Regime Detection Validation**
+   - Implement a logistic regression or a Probit model to predict the probability of a VIX regime transition (as defined in Step 3) using the lagged SVD as the primary predictor.
+   - Assess the model's performance using the Area Under the Receiver Operating Characteristic (AUROC) curve and the Precision-Recall curve.
+   - Conduct a sensitivity analysis by varying the SVD lookback window (e.g., 10, 21, 63 days) to determine the optimal horizon for detecting regime shifts.
+
+8. **Robustness Testing**
+   - Perform a "leave-one-out" cross-validation by systematically removing one sector ETF at a time and re-calculating the SVD to ensure the signal is not driven by a single outlier sector.
+   - Compare the SVD-based signal against a standard PCA-based market factor model to confirm that SVD provides unique information regarding market tension that is not captured by the first principal component.
+
+Previous research plan:
+None
+
+Feedback on previous research plan:
+None
+
+
+Respond in this format:
+
+\\begin{SUGGESTIONS}
+<SUGGESTIONS>
+\\end{SUGGESTIONS}
+
+In <SUGGESTIONS> put the suggestions to improve the plan.
+
+###### PROMPT ENDS ########
+
+\begin{SUGGESTIONS}
+1. **Refine Realized Volatility Calculation:** In Step 2, you calculate the 21-day rolling realized volatility. Ensure you specify the method (e.g., standard deviation of log-returns over the 21-day window). Also, consider annualizing these values (multiplying by $\sqrt{252}$) to make the SVD metric more interpretable in the context of the VIX, which is an annualized measure.
+
+2. **Address VIX Stationarity:** In Step 3, you define $\Delta VIX_t$ as $VIX_t - VIX_{t-1}$. While this makes the series stationary, the VIX is mean-reverting. Consider using the log-difference ($\ln(VIX_t / VIX_{t-1})$) or simply the level of the VIX if you are using a regime-switching framework, as the absolute level is often more relevant for "regime" definitions than the daily change.
+
+3. **Refine Regime Definition:** In Step 3, using static percentiles (33rd/66th) for the entire 2015–2026 period may lead to look-ahead bias if the thresholds are calculated using the full sample. Use an expanding window or a rolling window (e.g., 252-day) to calculate these percentiles to ensure the regime classification is truly predictive and reflects the information available at time $t$.
+
+4. **Enhance Predictive Modeling:** In Step 6, the linear regression assumes a constant relationship. Given that you are looking for "regime transitions," consider adding an interaction term between $SVD_t$ and the current VIX regime. This will test if SVD is more predictive during specific market states (e.g., when the market is already stressed).
+
+5. **Clarify PCA Comparison:** In Step 8, when comparing SVD to a PCA-based model, ensure the PCA is performed on the same 10 sector ETFs. Specifically, compare the SVD against the "explained variance ratio" of the first principal component (the market factor). If SVD provides predictive power beyond the first principal component, it strongly supports your hypothesis that idiosyncratic dispersion is a distinct risk signal.
+\end{SUGGESTIONS}
+
