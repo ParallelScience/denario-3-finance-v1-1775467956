@@ -1,0 +1,7 @@
+Classifier: Step 1 — Determining archive...
+  Archive: q-fin — The paper focuses on financial market volatility, risk management, and the predictive modeling of the CBOE Volatility Index (VIX), which are core topics in quantitative finance.
+Classifier: Step 2 — Determining subcategory within 'q-fin'...
+  Primary: q-fin.RM
+  Secondary: q-fin.ST, q-fin.GN
+  Justification: The paper focuses on predicting VIX innovations and regime shifts to manage market volatility, which is a core topic in risk management (q-fin.RM). The methodology relies heavily on econometric analysis, time-series modeling, and statistical testing of financial data (q-fin.ST), while the development of the SVD metric as a market indicator falls under general quantitative finance (q-fin.GN).
+Classification completed in 0 min 2 sec. Cost: $0.0000

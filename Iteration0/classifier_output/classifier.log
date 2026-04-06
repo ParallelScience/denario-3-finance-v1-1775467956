@@ -1,0 +1,91 @@
+
+###### PROMPT BEGINS ########
+Human: You are a scientific paper classifier. Your task is to determine the most appropriate top-level arXiv archive for the following paper.
+
+**Paper Title:** The Conditional Predictive Power of Sectoral Volatility Dispersion for VIX Innovations
+
+**Abstract:** This study investigates whether the cross-sectional dispersion of realized volatility across market sectors can serve as a leading indicator for shifts in the CBOE Volatility Index (VIX), a critical challenge in risk management. We construct a daily Sectoral Volatility Dispersion (SVD) metric from ten US sector ETFs spanning 2015 to 2026 and employ a Hidden Markov Model to endogenously classify VIX regimes. Econometric analysis reveals that SVD, in isolation, is not a statistically significant predictor of future VIX innovations or transitions into high-volatility states. However, we uncover a crucial conditional relationship: the predictive power of SVD emerges only when it interacts with market structure. Specifically, elevated SVD is significantly associated with higher 21-day ahead VIX innovations only when accompanied by a breakdown in average cross-sector correlation. These findings indicate that cross-sectional dispersion should not be interpreted as a standalone timing signal, but rather as a component of a more nuanced market fragility indicator, where the combination of idiosyncratic volatility and sector decoupling signals heightened vulnerability to systemic risk.
+
+**Archives:**
+- astro-ph: Astrophysics — cosmology, galaxies, stellar physics, planetary science, high-energy astrophysics, instrumentation
+- cond-mat: Condensed Matter — materials science, superconductivity, quantum gases, soft matter, statistical mechanics
+- cs: Computer Science — AI, machine learning, NLP, computer vision, algorithms, networking, security, software
+- econ: Economics — econometrics, general economics, theoretical economics
+- eess: Electrical Engineering and Systems Science — signal processing, image/video processing, audio/speech, control
+- gr-qc: General Relativity and Quantum Cosmology — gravitational physics, gravitational waves, black holes
+- hep-ex: High Energy Physics - Experiment — particle physics experiments, collider results
+- hep-lat: High Energy Physics - Lattice — lattice field theory, lattice QCD
+- hep-ph: High Energy Physics - Phenomenology — theoretical particle physics connected to experiment
+- hep-th: High Energy Physics - Theory — string theory, quantum field theory, supersymmetry
+- math: Mathematics — algebra, geometry, topology, analysis, probability, number theory, optimization
+- math-ph: Mathematical Physics — mathematical methods for physics problems
+- nlin: Nonlinear Sciences — chaos, pattern formation, solitons, integrable systems, self-organization
+- nucl-ex: Nuclear Experiment — experimental nuclear physics
+- nucl-th: Nuclear Theory — nuclear structure theory, hadron models, neutron stars
+- physics: Physics (General) — classical, computational, fluid dynamics, optics, plasma, applied, biological, chemical physics
+- q-bio: Quantitative Biology — biomolecules, genomics, neuroscience, populations, quantitative methods
+- q-fin: Quantitative Finance — computational finance, portfolio management, risk, pricing, trading
+- quant-ph: Quantum Physics — quantum information, computation, entanglement, foundations, optics
+- stat: Statistics — methodology, applications, machine learning (with statistical grounding), computation
+
+Select the single most appropriate archive for this paper. If the paper spans multiple fields, choose the one where the paper makes its primary contribution.
+
+###### PROMPT ENDS ########
+
+archive='q-fin' justification='The paper focuses on financial market volatility, risk management, and the predictive modeling of the CBOE Volatility Index (VIX), which are core topics in quantitative finance.'
+###### PROMPT BEGINS ########
+Human: You are a scientific paper classifier. You have already determined that this paper belongs to the **q-fin** archive on arXiv. Now select the specific subcategory.
+
+**Paper Title:** The Conditional Predictive Power of Sectoral Volatility Dispersion for VIX Innovations
+
+**Abstract:** This study investigates whether the cross-sectional dispersion of realized volatility across market sectors can serve as a leading indicator for shifts in the CBOE Volatility Index (VIX), a critical challenge in risk management. We construct a daily Sectoral Volatility Dispersion (SVD) metric from ten US sector ETFs spanning 2015 to 2026 and employ a Hidden Markov Model to endogenously classify VIX regimes. Econometric analysis reveals that SVD, in isolation, is not a statistically significant predictor of future VIX innovations or transitions into high-volatility states. However, we uncover a crucial conditional relationship: the predictive power of SVD emerges only when it interacts with market structure. Specifically, elevated SVD is significantly associated with higher 21-day ahead VIX innovations only when accompanied by a breakdown in average cross-sector correlation. These findings indicate that cross-sectional dispersion should not be interpreted as a standalone timing signal, but rather as a component of a more nuanced market fragility indicator, where the combination of idiosyncratic volatility and sector decoupling signals heightened vulnerability to systemic risk.
+
+**Methods (if available):** \subsection{Data and Feature Construction}
+The primary dataset consists of daily closing prices for nine major US sector ETFs (XLK, XLF, XLV, XLE, XLI, XLY, XLP, XLU, XLB) and the CBOE Volatility Index (VIX) from January 2015 to April 2026. The S\&P 500 index (\textasciicircum GSPC) was also included as a market-wide control variable. All data was processed to ensure a balanced panel by removing days with missing observations for any of the assets.
+
+The core metric, Sectoral Volatility Dispersion (SVD), was constructed through a multi-step process. First, daily logarithmic returns were calculated for each of the nine sector ETFs. Second, for each ETF, we computed a 21-day rolling realized volatility, defined as the standard deviation of its log-returns over the preceding 21 trading days. This daily volatility figure was then annualized:
+\begin{equation}
+    \sigma_{i,t}^{(21)} = \sqrt{252} \times \text{StDev}(r_{i, t-20:t})
+\end{equation}
+where $\sigma_{i,t}^{(21)}$ is the annualized 21-day realized volatility for sector $i$ at day $t$, and $r_{i, t-20:t}$ is the series of daily log-returns for that sector over the 21-day window.
+
+The SVD for each day $t$ was then calculated as the cross-sectional standard deviation of these nine concurrent realized volatility estimates:
+\begin{equation}
+    \text{SVD}_t = \sqrt{\frac{1}{N-1} \sum_{i=1}^{N} (\sigma_{i,t}^{(21)} - \bar{\sigma}_{t}^{(21)})^2}
+\end{equation}
+where $N=9$ is the number of sectors and $\bar{\sigma}_{t}^{(21)}$ is the cross-sectional average of the sector volatilities at time $t$. To ensure stationarity and facilitate interpretation in our regression models, this raw SVD series was transformed into a normalized Z-score using a rolling 252-day (one trading year) lookback window for the mean and standard deviation. Stationarity of the resulting time series was confirmed using the Augmented Dickey-Fuller (ADF) test.
+
+To capture the market's correlational structure, we also computed a daily measure of average cross-sector correlation. This was calculated as the mean of all unique pairwise correlations across the nine sector ETFs, based on their daily returns over a rolling 21-day window.
+
+\subsection{VIX Regime Identification}
+To endogenously classify market volatility states, we employed a three-state Gaussian Hidden Markov Model (HMM). This probabilistic approach avoids the use of arbitrary, fixed thresholds for the VIX and instead allows the data to define distinct regimes based on the distributional properties of VIX changes. The model was fitted to the daily log-returns of the VIX index, $\Delta \ln(\text{VIX}_t) = \ln(\text{VIX}_t / \text{VIX}_{t-1})$, to ensure the input series was stationary. The three latent states identified by the HMM were subsequently labeled as ``Low'', ``Moderate'', and ``High'' volatility regimes by examining the average raw VIX level corresponding to the days classified within each state.
+
+\subsection{Econometric Analysis}
+Our empirical investigation involved two primary modeling frameworks to assess the predictive power of SVD.
+
+First, to test the conditional relationship between SVD and future VIX movements, we estimated an Ordinary Least Squares (OLS) regression model. The model predicts the $k$-day ahead log-return of the VIX using the normalized SVD, an interaction term between SVD and the average sector correlation, and several control variables. The full specification is:
+\begin{equation}
+    \Delta \ln(\text{VIX})_{t+k} = \alpha + \beta_1 \text{SVD}_t + \beta_2 (\text{SVD}_t \times \text{AvgCorr}_t) + \beta_3 \Delta \ln(\text{VIX})_t + \beta_4 r_{\text{MKT},t} + \epsilon_t
+\end{equation}
+where $\Delta \ln(\text{VIX})_{t+k}$ is the log-return of the VIX over the next $k$ days, $\text{SVD}_t$ is the normalized SVD at time $t$, $\text{AvgCorr}_t$ is the 21-day average sector correlation, $\Delta \ln(\text{VIX})_t$ is the concurrent VIX log-return, and $r_{\text{MKT},t}$ is the concurrent S\&P 500 log-return. We estimated this model for horizons of $k=5$ and $k=21$ days. To ensure robust statistical inference in the presence of heteroskedasticity and autocorrelation inherent in overlapping time-series data, all reported standard errors were corrected using the Newey-West estimator.
+
+Second, to evaluate SVD as a discrete warning signal for regime shifts, we used a logistic regression model. The model was designed to predict the probability of the market transitioning into the ``High'' volatility regime on day $t$, conditional on not being in that state on day $t-1$. The primary predictor was the lagged normalized SVD ($SVD_{t-1}$). Model performance was evaluated using two metrics: the Area Under the Receiver Operating Characteristic curve (AUROC), which measures overall discriminatory power, and the Precision-Recall Area Under the Curve (PR AUC), which is more informative for evaluating classifiers on highly imbalanced datasets where the event of interest (a transition to high volatility) is rare.
+
+Finally, to confirm that our findings were not driven by the behavior of any single sector, we performed a Leave-One-Out Cross-Validation (LOOCV) on the logistic regression model. The SVD metric was recalculated nine times, each time excluding one sector ETF, and the AUROC was computed for each iteration to assess the stability of the model's predictive performance.
+
+**Available subcategories in q-fin:**
+- q-fin.CP: Computational Finance — Computational methods, including Monte Carlo, PDE, lattice and other numerical methods with applications to finance.
+- q-fin.EC: Economics — Economics and finance interfaces, economic modeling, behavioral economics.
+- q-fin.GN: General Finance — Development of general quantitative methodologies with applications in finance.
+- q-fin.MF: Mathematical Finance — Mathematical and analytical methods of finance, including stochastic, probabilistic and deterministic methods.
+- q-fin.PM: Portfolio Management — Security selection and optimization, capital allocation, investment strategies and performance.
+- q-fin.PR: Pricing of Securities — Valuation and hedging of financial securities, their derivatives, and structured products.
+- q-fin.RM: Risk Management — Measurement and management of financial risks in trading, banking, insurance, corporate finance.
+- q-fin.ST: Statistical Finance — Statistical, econometric and econophysics analyses with applications to financial markets and data.
+- q-fin.TR: Trading and Market Microstructure — Market microstructure, liquidity, exchange and auction design, automated trading, agent-based models.
+
+Select one primary subcategory and up to 3 secondary subcategories (from any archive) that also apply. The primary must be from the list above. Secondary categories may come from any arXiv category if the paper is interdisciplinary.
+
+###### PROMPT ENDS ########
+
+primary_category='q-fin.RM' secondary_categories=['q-fin.ST', 'q-fin.GN'] justification='The paper focuses on predicting VIX innovations and regime shifts to manage market volatility, which is a core topic in risk management (q-fin.RM). The methodology relies heavily on econometric analysis, time-series modeling, and statistical testing of financial data (q-fin.ST), while the development of the SVD metric as a market indicator falls under general quantitative finance (q-fin.GN).'
