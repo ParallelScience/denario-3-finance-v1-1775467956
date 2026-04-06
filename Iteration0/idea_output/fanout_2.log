@@ -1,0 +1,121 @@
+
+###### PROMPT BEGINS ########
+Human: 
+**Role**: Senior Scientific Lead and Peer Reviewer.
+**Objective**: Critically evaluate 10 proposed research ideas and select the single most impactful project to move into the planning phase.
+
+**Evaluation Framework**:
+To determine the "largest scientific impact," you must weigh each idea against the following four pillars:
+1. **Feasibility**: Given the constraints in the 'Data Description,' can this project actually be executed with the available variables?
+2. **Novelty**: Does the idea offer a fresh perspective, or is it a standard, derivative analysis?
+3. **Rigour**: Does the idea suggest a deep investigation into the underlying physics/logic of the data?
+4. **Utility**: Will the results provide actionable insights or significantly enhance our understanding of the system?
+5. The idea selected should be as different as possible to any previous ideas.
+
+**Task**:
+1. Review the proposed 10 research ideas along with any previous ideas.
+2. Review the 'Data Description' to ensure the ideas are physically and statistically grounded.
+3. Select the **one** idea that best balances innovation with scientific feasibility.
+4. The selected idea must contain a title and a description of it.
+
+**Operational Constraints**:
+- Do not provide a list of pros and cons.
+- Do not modify the original text of the idea.
+- Provide **only** the text of the selected idea within the required tags.
+
+Data description:
+## Finance Dataset: Daily OHLCV for US Equities, Indices, and Sector ETFs (2015–2026)
+
+### Files
+
+- **`/home/node/work/data/finance/ohlcv_daily.parquet`** — Full OHLCV data. Multi-level column index: outer level = field (Open, High, Low, Close, Volume), inner level = ticker symbol. Shape: (2830, 330). Load with `pd.read_parquet(...)`.
+- **`/home/node/work/data/finance/close_prices.csv`** — Adjusted close prices only. Shape: (2830 rows × 66 columns). Index = trading dates (datetime), columns = ticker symbols. Load with `pd.read_csv(..., index_col=0, parse_dates=True)`.
+
+### Tickers (66 total)
+
+**Major US Indices (5):** `^GSPC` (S&P 500), `^DJI` (Dow Jones), `^IXIC` (Nasdaq Composite), `^RUT` (Russell 2000), `^VIX` (CBOE Volatility Index)
+
+**Sector ETFs (11):** `XLK` (Tech), `XLF` (Financials), `XLV` (Healthcare), `XLE` (Energy), `XLI` (Industrials), `XLY` (Consumer Discretionary), `XLP` (Consumer Staples), `XLU` (Utilities), `XLB` (Materials), `XLRE` (Real Estate), `XLC` (Communication Services)
+
+**Large-Cap Stocks (50):**
+- Tech: AAPL, MSFT, NVDA, GOOGL, META, AMZN, TSLA, AVGO, ORCL, AMD
+- Finance: JPM, BAC, GS, MS, V, MA, BRK-B, WFC, AXP, BLK
+- Healthcare: UNH, JNJ, LLY, ABBV, MRK, PFE, TMO, DHR, ABT
+- Energy: XOM, CVX, COP, SLB
+- Consumer: WMT, COST, HD, MCD, NKE, SBUX
+- Industrial: CAT, BA, GE, HON, UPS
+- Telecom/Media: T, VZ, NFLX, DIS
+- Other: LIN, NEE
+
+### Data Properties
+
+- **Date range:** 2015-01-02 to 2026-04-06 (~2,830 trading days, ~11 years)
+- **Frequency:** Daily (US market trading days only)
+- **Prices:** Adjusted for splits and dividends (`auto_adjust=True` from yfinance)
+- **Units:** USD (prices), shares (volume)
+- **Missing values:** XLC has ~31% missing (launched 2018); XLRE has ~7% missing (launched 2015-Q4); all other tickers have <0.04% missing (1–2 isolated days, likely data gaps)
+- **VIX:** Volatility index — not a tradeable price; represents implied 30-day volatility of S&P 500 options (values typically 10–80)
+
+### Suggested Analyses
+
+- Log-return time series: `log_returns = np.log(close / close.shift(1)).dropna()`
+- Correlation/covariance structure across assets and sectors
+- Factor models (PCA, market beta, sector exposures)
+- Volatility regimes and clustering
+- Cross-sectional return predictability
+- Portfolio optimization (mean-variance, risk parity)
+- Sector rotation dynamics
+
+
+Proposed ideas:
+1. **Asymmetric Volatility Transmission During Market Stress**
+Does the VIX index act as a lead indicator for liquidity evaporation across specific sectors during regime shifts? This research explores whether volatility shocks propagate differently through cyclical versus defensive sectors, potentially identifying "early warning" assets that decouple from index-wide trends before a market correction.
+
+2. **The "Information Leakage" of Sector ETF Gaps**
+Does the introduction of sector-specific ETFs, such as the XLC, fundamentally alter the price discovery process of their constituent large-cap stocks? By comparing pre- and post-launch price dynamics, this study seeks to determine if sector-level passive inflows create structural inefficiencies in individual stock pricing.
+
+3. **Intra-Sector Dispersion as a Predictor of Macro-Regimes**
+Can the cross-sectional variance of daily returns within a single sector (e.g., Technology) serve as a proxy for hidden market fragility? This objective examines whether high divergence in performance among top-tier stocks within a sector precedes systemic volatility spikes, even when the broader index remains stable.
+
+4. **Volume-Price Divergence and Institutional Accumulation Cycles**
+Do persistent discrepancies between volume-weighted price trends and adjusted close price movements signal long-term institutional rebalancing? This research aims to identify whether specific volume patterns in large-cap stocks provide predictive power for multi-month trend reversals that are invisible to price-only models.
+
+5. **Cross-Asset Lead-Lag Dynamics in Interest Rate Sensitive Sectors**
+To what extent do utilities (XLU) and financial (XLF) ETFs act as leading or lagging indicators for the broader S&P 500 during periods of rapid monetary policy shifts? This study investigates whether the relative performance of these two sectors functions as a "macro-barometer" that precedes broader market reactions to exogenous economic data.
+
+6. **The Persistence of Sector Rotation Alpha**
+Does the momentum of sector rotation follow a predictable cyclicality that correlates with the VIX term structure? This research objective focuses on determining if there is a quantifiable "rotation decay" where the predictive power of sector-level relative strength diminishes as the market cycle matures.
+
+7. **The Impact of Extreme VIX Outliers on Sector Correlation Structures**
+How does the correlation matrix of the 11 sector ETFs collapse or reorganize during extreme VIX regimes? This study examines whether sector diversification benefits vanish uniformly during volatility spikes or if specific defensive sectors maintain their independence, providing a blueprint for dynamic risk-parity adjustments.
+
+8. **Non-Linear Feedback Loops Between Large-Cap Tech and Market Indices**
+Do the largest tech-sector constituents exhibit non-linear causal relationships with the S&P 500 that change based on cumulative volume? This research seeks to quantify the "index-dependency" of mega-cap stocks and identify if their influence on the broader market has grown monotonically over the last decade.
+
+9. **Energy-Telecom Decoupling as a Signal for Consumer Spending Shifts**
+Can the relative performance ratio between the Energy (XLE) and Communication Services (XLC) sectors serve as a reliable predictor of shifts in consumer discretionary spending habits? This study investigates if the interplay between these two distinct sectors captures underlying changes in household inflation sensitivity before they appear in consumer-focused ETFs.
+
+10. **Persistence of "Ghost" Volatility in Sector ETFs**
+Does the introduction of new sector ETFs create a temporary period of structural inefficiency where the ETF price deviates from the synthetic value of its constituents? This research aims to quantify the "maturation time" required for new sector-level instruments to achieve full informational efficiency relative to their constituent large-cap stocks.
+
+
+
+
+
+
+
+Respond in exactly the following format:
+
+\\begin{IDEA}
+<IDEA>
+\\end{IDEA}
+
+In <IDEA>, put the idea you have selected
+
+###### PROMPT ENDS ########
+
+\begin{IDEA}
+**Intra-Sector Dispersion as a Predictor of Macro-Regimes**
+Can the cross-sectional variance of daily returns within a single sector (e.g., Technology) serve as a proxy for hidden market fragility? This objective examines whether high divergence in performance among top-tier stocks within a sector precedes systemic volatility spikes, even when the broader index remains stable.
+\end{IDEA}
+
